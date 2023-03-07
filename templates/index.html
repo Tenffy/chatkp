@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>对话框</title>
+	<style>
+		.title {
+			text-align: center;
+			font-size: 30px;
+			font-family: Arial, sans-serif;
+			margin-top: 20px;
+		}
+		.container {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			height: 70vh;
+			font-family: Arial, sans-serif;
+		}
+		.output {
+			width: 800px;
+			height: 800px;
+	        overflow-y: auto;
+			border: 1px solid #ccc;
+			padding: 10px;
+			margin-bottom: 20px;
+			font-size: 16px;
+			word-wrap: break-word;
+			white-space: pre-wrap;
+			display: flex;
+			flex-direction: column;
+			
+		}
+		.input {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			justify-content: center;
+		}
+		.inputframe {
+			flex-grow: 1;
+            width: 750px;
+			height: 40px;
+			border: 1px solid #ccc;
+			padding: 10px;
+			font-size: 16px;
+			margin-right: 10px;
+		}
+		.send_button {
+			height: 40px;
+			background-color: #007bff;
+			color: #fff;
+			border: none;
+			padding: 10px;
+			font-size: 16px;
+			cursor: pointer;
+		}
+		.container2 {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			height: 10vh;
+			font-family: Arial, sans-serif;
+		}
+		.reset-button {
+			height: 40px;
+			width: 150px;
+			background-color: #d14747;
+			color: #fff;
+			border: none;
+			padding: 10px;
+			font-size: 16px;
+			cursor: pointer;
+
+		}
+		.chat-button {
+			height: 40px;
+			width: 150px;
+			background-color: #379d2f;
+			color: #fff;
+			border: none;
+			padding: 10px;
+			font-size: 16px;
+			cursor: pointer;
+		}
+		.user-message{
+			background-color: #d6e2e0;
+			color: #007bff;
+
+		}
+	</style>
+
+    <meta charset="UTF-8">
+
+</head>
+<body>
+	<p class = 'title'>GPT首页</p>
+	<div class="container">
+		<div class="output" id="messages"></div>
+		<form id="user-form" action="/" method="POST">
+			<div class="input">
+				<input class="inputframe" id="user-input-text" type="text" name="message" placeholder="输入信息">
+				<input class="send_button" type="submit" value="发送">
+			</div>
+		</form>
+		<div class='container2'>
+			<button class= 'reset-button' id="reset-button">重置</button>
+			<button class= 'chat-button' id="chat-button">跑团GPT</button>
+		</div>
+	</div>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script>
+		console.log('测试报错')
+        $(function() {
+            $('#user-form').submit(function(event) {
+				event.preventDefault();
+				var user_input = $('#user-input-text').val()
+                $('#messages').append('<div class="user-message"><p>我：' + user_input+'<br></p></div>');
+				$('#messages').scrollTop($('#messages')[0].scrollHeight);	
+				$('#send_button').attr('disabled',true);			
+                $.ajax({
+                    type: 'POST',
+                    url: '/get_response',
+                    data: { user_input: user_input },
+                    success: function(response) {
+                        $('#messages').append('<div class="bot-message">' + response + '</div>');
+						$('#messages').scrollTop($('#messages')[0].scrollHeight);
+						$('#send_button').attr('disabled',false);
+						
+                    }
+                });
+                $('#user-input-text').val('');
+            });
+            $('#reset-button').click(function() {
+                $.ajax({
+                    type: 'GET',
+                    url: '/reset',
+                    success: function(response) {
+                        $('#messages').empty();
+						$('#send_button').attr('disabled',false);
+                    }
+                });
+            });
+			$('#chat-button').click(function() {
+				window.location.href = '/chat'
+            });			
+        });
+    </script>
+</body>
+</html>

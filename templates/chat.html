@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>对话框</title>
+	<style>
+		.title{
+			font-size: 30px;
+			text-align: center;
+			margin-top: 20px;
+			margin-bottom: 10px;
+		}
+		.container {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			height: 70vh;
+			font-family: Arial, sans-serif;
+		}
+
+		.output {
+			width: 832px;
+			height: 800px;
+	        overflow-y: auto;
+			border: 1px solid #ccc;
+			padding: 10px;
+			margin-bottom: 20px;
+			font-size: 16px;
+			word-wrap: break-word;
+			white-space: pre-wrap;
+			display: flex;
+			flex-direction: column;
+			
+		}
+		.user-message{
+			background-color: #d6e2e0;
+			color: #007bff;
+			padding: 10px;
+		}
+		.input {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			justify-content: center;
+		}
+		.choice {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			justify-content: center;
+			height: 5vh;
+		}
+		.inputframe1 {
+			flex-grow: 1;
+            width: 370px;
+			height: 40px;
+			border: 1px solid #ccc;
+			padding: 10px;
+			font-size: 16px;
+			margin-right: 10px;
+		}
+		.inputframe2 {
+			flex-grow: 1;
+            width: 370px;
+			height: 40px;
+			border: 1px solid #ccc;
+			padding: 10px;
+			font-size: 16px;
+			margin-right: 10px;
+		}
+		.send_button {
+			height: 60px;
+			background-color: #007bff;
+			color: #fff;
+			border: none;
+			padding: 10px;
+			font-size: 16px;
+			cursor: pointer;
+		}
+
+		.buttonA {
+			height: 40px;
+			width: 100px;
+			background-color: #007bff;
+			color: #fff;
+			border: none;
+			padding: 10px;
+			font-size: 16px;
+			cursor: pointer;
+			margin-right: 10px;
+		}
+		.buttonB {
+			height: 40px;
+			width: 100px;
+			background-color: #007bff;
+			color: #fff;
+			border: none;
+			padding: 10px;
+			font-size: 16px;
+			cursor: pointer;
+			margin-left: 10px;
+		}
+		.container2 {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+		}
+		.reset-button {
+			height: 40px;
+			width: 150px;
+			background-color: #d14747;
+			color: #fff;
+			border: none;
+			padding: 10px;
+			font-size: 16px;
+			cursor: pointer;
+		}
+		.back-button {
+			height: 40px;
+			width: 150px;
+			background-color: #6a92b4;
+			color: #fff;
+			border: none;
+			padding: 10px;
+			font-size: 16px;
+			cursor: pointer;
+		}
+
+	</style>
+
+    <meta charset="UTF-8">
+
+</head>
+<body>
+	<p class = 'title'>gpt跑团测试页面</p>
+	<div class="container">
+		<div class="output" id="messages"></div>
+		<form id="user-form" action="/" method="POST">
+			<div class="input">
+				<input class="inputframe1" id="username_input" type="text" name="message" placeholder="输入名字">
+				<input class="inputframe2" id="usertheme_input" type="text" name="message" placeholder="输入主题">
+				<input id ='send_button' class="send_button" type="submit" value="发送">
+			</div>
+		</form>
+		<div class="choice">
+			<button id= 'buttonA' class = 'buttonA' >选A</button>
+			<button id= 'buttonB' class = 'buttonB'>选B</button>
+		</div>
+		<div class='container2'>
+			<button class= 'reset-button' id="reset-button">重新开始游戏</button>
+			<button class= 'back-button' id="back-button">返回首页</button>
+		</div>
+	</div>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script>
+		console.log('测试报错')
+		$('#buttonA').hide();
+		$('#buttonB').hide();
+        $(function() {
+            $('#user-form').submit(function(event) {
+				event.preventDefault();
+				var user_input = '\"'+$('#username_input').val()+'\",\"'+$('#usertheme_input').val()+'\"';
+                $('#messages').append('<div class="user-message"><p>我：' + user_input+'<br></p></div>');
+				$('#messages').scrollTop($('#messages')[0].scrollHeight);		
+				$('#send_button').attr('disabled',true);
+                $.ajax({
+                    type: 'POST',
+                    url: '/chat/get_response',
+                    data: { user_input: user_input },
+                    success: function(response) {
+                        $('#messages').append('<div class="bot-message">' + response[0] + '</div>');
+						$('#messages').scrollTop($('#messages')[0].scrollHeight);
+						$('#user-form').hide();
+						$('#buttonA').show();
+						$('#buttonB').show();
+                    }
+                });
+                $('#username_input').val('');
+				$('#usertheme_input').val('');
+            });
+			$('#buttonA').click(function(event) {
+				event.preventDefault();
+				var user_input = 'A';
+				var user_color='';
+				if(Math.floor(Math.random() * 10<=4)){
+					user_input = 'A' + ',接下去事情变得不妙了[检定失败]';
+					user_color="style='color:red'"
+				}
+				else{
+					user_input = 'A' + ',接下去事情变得不错[检定成功]';
+				}
+				$('#messages').append('<div class="user-message"><p '+user_color +'>我：' + user_input + '<br></p></div>');
+				$('#messages').scrollTop($('#messages')[0].scrollHeight);	
+				$('#buttonA').attr('disabled',true);
+				$('#buttonB').attr('disabled',true);
+				$('#buttonA').css('background','gray');
+				$('#buttonB').css('background','gray');
+				$.ajax({
+                    type: 'POST',
+                    url: '/chat/get_response',
+                    data: { user_input:user_input },
+                    success: function(response) {
+                        $('#messages').append('<div class="bot-message">' + response[0] + '</div>');
+						$('#messages').scrollTop($('#messages')[0].scrollHeight);
+						$('#buttonA').attr('disabled',false);
+						$('#buttonB').attr('disabled',false);
+						$('#buttonA').css('background','#007bff');
+						$('#buttonB').css('background','#007bff');
+						if(response[1]==true){
+							$('#buttonA').hide();
+							$('#buttonB').hide();
+						}
+                    },
+					error: function() {
+						console.log('报错了');
+						alert('请求openai超时');
+						$('#buttonA').attr('disabled',false);
+						$('#buttonB').attr('disabled',false);
+					}
+				});
+			});
+			$('#buttonB').click(function(event) {
+				event.preventDefault();
+				var user_input = 'B';
+				var user_color='';
+				if(Math.floor(Math.random() * 10<=4)){
+					user_input = 'B' + ',接下去事情变得不妙了[检定失败]';
+					user_color="style='color:red'"
+				}
+				else{
+					user_input = 'B' + ',接下去事情变得不错[检定成功]';
+				}
+				$('#messages').append('<div class="user-message"><p '+user_color +'>我：' + user_input + '<br></p></div>');
+				$('#messages').scrollTop($('#messages')[0].scrollHeight);
+				$('#buttonA').attr('disabled',true);
+				$('#buttonB').attr('disabled',true);	
+				$('#buttonA').css('background','gray');
+				$('#buttonB').css('background','gray');		
+				$.ajax({
+                    type: 'POST',
+                    url: '/chat/get_response',
+                    data: { user_input: 'B' },
+                    success: function(response) {
+                        $('#messages').append('<div class="bot-message">' + response[0] + '</div>');
+						$('#messages').scrollTop($('#messages')[0].scrollHeight);
+						$('#buttonA').attr('disabled',false);
+						$('#buttonB').attr('disabled',false);
+						$('#buttonA').css('background','#007bff');
+						$('#buttonB').css('background','#007bff');
+						if(response[1]==true){
+							$('#buttonA').hide();
+							$('#buttonB').hide();
+						}
+					},
+					error: function() {
+						console.log('报错了');
+						alert('请求openai超时');
+						$('#buttonA').attr('disabled',false);
+						$('#buttonB').attr('disabled',false);
+					}
+				});
+			});
+            $('#reset-button').click(function() {
+                $.ajax({
+                    type: 'GET',
+                    url: '/chat/reset',
+                    success: function(response) {
+                        $('#messages').empty();
+						$('#buttonA').hide();
+						$('#buttonB').hide();
+						$('#user-form').show();
+						$('#buttonA').attr('disabled',false);
+						$('#buttonB').attr('disabled',false);
+						$('#send_button').attr('disabled',false);
+						
+                    }
+                });
+            });
+			$('#back-button').click(function() {
+				window.location.href = '/'
+            });			
+        });
+    </script>
+</body>
+</html>

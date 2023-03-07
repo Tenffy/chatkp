@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+	<h1>Hello,Flask!
+    </h1>
+	<p>字符串的字数为 {{ name }}。</p>
+	<script>
+    $(document).ready(function () {
+            namespace = '/dcenter';
+            var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+            socket.on('dcenter', function (res) {
+                var t = res.data;
+                if (t) {
+                    $("#t").append(t).append('<br/>');
+                }
+         
+            });
+    });
+    </script>
+</body>
+</html>
