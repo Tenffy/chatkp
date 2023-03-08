@@ -164,6 +164,7 @@
                 $('#messages').append('<div class="user-message"><p>我：' + user_input+'<br></p></div>');
 				$('#messages').scrollTop($('#messages')[0].scrollHeight);		
 				$('#send_button').attr('disabled',true);
+				
                 $.ajax({
                     type: 'POST',
                     url: '/chat/get_response',

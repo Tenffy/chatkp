@@ -2,7 +2,6 @@ from flask import Flask, render_template, request
 from markupsafe import escape
 from flask import render_template
 from gpt35turbo import GPT35Chat
-from flask_socketio import SocketIO, emit     
 import time
 import asyncio
 
@@ -183,6 +182,6 @@ def generateGPT(msg):
     print('print测试4：'+'')
     return output
 if __name__ == '__main__':                                                      
-    app.run(debug=True) 
+    app.run(debug=True,host='0.0.0.0',port=5000) 
 
 

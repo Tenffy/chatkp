@@ -1,6 +1,6 @@
 import openai
 class GPT35Chat:
-  openai.api_key ='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'
+  openai.api_key ='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'
   
   global systemMsgF
   global systemMsgM

@@ -101,7 +101,7 @@
 		<form id="user-form" action="/" method="POST">
 			<div class="input">
 				<input class="inputframe" id="user-input-text" type="text" name="message" placeholder="输入信息">
-				<input class="send_button" type="submit" value="发送">
+				<input id ='send_button' class="send_button" type="submit" value="发送">
 			</div>
 		</form>
 		<div class='container2'>
@@ -118,7 +118,8 @@
 				var user_input = $('#user-input-text').val()
                 $('#messages').append('<div class="user-message"><p>我：' + user_input+'<br></p></div>');
 				$('#messages').scrollTop($('#messages')[0].scrollHeight);	
-				$('#send_button').attr('disabled',true);			
+				$('#send_button').attr('disabled',true);	
+				$('#send_button').css('background','gray');		
                 $.ajax({
                     type: 'POST',
                     url: '/get_response',
@@ -127,7 +128,7 @@
                         $('#messages').append('<div class="bot-message">' + response + '</div>');
 						$('#messages').scrollTop($('#messages')[0].scrollHeight);
 						$('#send_button').attr('disabled',false);
-						
+						$('#send_button').css('background','#007bff');
                     }
                 });
                 $('#user-input-text').val('');
