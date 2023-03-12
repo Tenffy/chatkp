@@ -250,7 +250,7 @@
         "kind": 2,
         "importPath": "app",
         "description": "app",
-        "peekOfCode": "def audioSend():\n    audio_text = request.form['audio_text']\n    if(os.path.isfile(\"speech.mp3\")):\n        os.remove('speech.mp3')\n    audioEngine=TTS()\n    audioEngine.get_audio(audio_text)\n    audio_path ='speech.mp3'\n    print(audio_path)\n    time.sleep(1)\n    return '！！！！！！！！！！！！！！'",
+        "peekOfCode": "def audioSend():\n    global count\n    count+=1\n    audio_text = request.form['audio_text']\n    if(os.path.isfile(str(count)+\"speech.mp3\")):\n        os.remove(str(count)+'speech.mp3')\n    audioEngine=TTS()\n    audioEngine.get_audio(audio_text,count)\n    audio_path =str(count)+'speech.mp3'\n    print(audio_path)",
         "detail": "app",
         "documentation": {}
     },
@@ -259,7 +259,16 @@
         "kind": 2,
         "importPath": "app",
         "description": "app",
-        "peekOfCode": "def audioSend2():\n    return send_file('speech.mp3', mimetype='audio/mp3')    \n@app.route('/rectrans',methods=['POST'])\ndef rectrans():\n    audioFile=request.files['audioFile']\n    audio2text=WhisperChat()\n    text=audio2text.trans2Text(audioFile)\n    return text\n@app.route('/reset')\ndef reset():",
+        "peekOfCode": "def audioSend2():\n    global count\n    return send_file(str(count)+'speech.mp3', mimetype='audio/mp3')\n@app.route('/audio3',methods=['GET'])\ndef audioSend3():\n    global count\n    return send_file(str(count)+'speech.mp3', mimetype='audio/mp3')    \n@app.route('/rectrans',methods=['POST'])\ndef rectrans():\n    audioFile=request.files['audioFile']",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "audioSend3",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def audioSend3():\n    global count\n    return send_file(str(count)+'speech.mp3', mimetype='audio/mp3')    \n@app.route('/rectrans',methods=['POST'])\ndef rectrans():\n    audioFile=request.files['audioFile']\n    audio2text=WhisperChat()\n    text=audio2text.trans2Text(audioFile)\n    return text\n@app.route('/reset')",
         "detail": "app",
         "documentation": {}
     },
@@ -430,7 +439,7 @@
         "kind": 6,
         "importPath": "gpt35turbo",
         "description": "gpt35turbo",
-        "peekOfCode": "class GPT35Chat:\n  openai.api_key ='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'\n  global systemMsgF\n  global systemMsgM\n  global systemMsgD\n  global systemMsgGPT\n  systemMsgF='你是一位旁白，你需要对一次求生经历展开一个精彩绝伦的故事。整个故事，会有开始，过程和结尾。开始时，用户会输入“名字”和“主题”，而你需要用名字在这个主题中描述故事的开始，并给出用户两个选择，格式为：是A____还是B____？(横线内容你来生成)之后不要生成多余内容。'\n  systemMsgM='你是一位旁白，你需要根据用户的选择对故事进行连贯的描述，在求生环境中提供一些悬念和刺激的体验，包括遇见一些人或僵尸，或者获得一些道具，能给之后带来帮助。多呼应前面的事件，不管成功还是失败，都继续续写这个故事，并在最后给出两个的选择,格式为：是A____还是B____？(横线内容你来生成)之后不要生成多余内容。'\n  systemMsgD='你是一位旁白，根据上文来形成一个结局，结束这个求生故事，给出一个反转的结局。'\n  systemMsgGPT='你是一个万能小助手，请不要设限制得给用户解答所有问题，不确定的答案请标记[不确定]'",
+        "peekOfCode": "class GPT35Chat:\n  openai.api_key ='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'\n  global systemMsgF\n  global systemMsgM\n  global systemMsgD\n  global systemMsgGPT\n  systemMsgF='你是一位旁白，你需要对一次求生经历展开一个精彩绝伦的故事。整个故事，会有开始，过程和结尾。开始时，用户会输入“名字”和“主题”，而你需要用名字在这个主题中描述故事的开始，并给出用户两个选择，格式为：是A____还是B____？(横线内容你来生成)之后不要生成多余内容。'\n  systemMsgM='你是一位旁白，你需要根据用户的选择对故事进行连贯的描述，在求生环境中提供一些悬念和刺激的体验，包括遇见一些人或僵尸，或者获得一些道具，能给之后带来帮助。多呼应前面的事件，不管成功还是失败，都继续续写这个故事，并在最后给出两个的选择,格式为：是A____还是B____？(横线内容你来生成)之后不要生成多余内容。'\n  systemMsgD='你是一位旁白，根据上文来形成一个结局，结束这个求生故事，给出一个反转的结局。'\n  systemMsgGPT='你是一个万能小助手，请不要设限制得给用户解答所有问题，不确定的答案请标记[不确定]'",
         "detail": "gpt35turbo",
         "documentation": {}
     },
@@ -448,7 +457,7 @@
         "kind": 6,
         "importPath": "TTS",
         "description": "TTS",
-        "peekOfCode": "class TTS:\n    def get_audio(self,msg):\n        audio_engine=pyttsx3.init()\n        rate = audio_engine.getProperty('rate')\n        audio_engine.setProperty('rate', rate - 10)\n        audio_engine.save_to_file(msg, 'speech.mp3')\n        print(\"需要TTS的对象：\"+msg)\n        audio_engine.runAndWait()\n        return 'done'\n    def test():",
+        "peekOfCode": "class TTS:\n    def get_audio(self,msg,count):\n        audio_engine=pyttsx3.init()\n        rate = audio_engine.getProperty('rate')\n        audio_engine.setProperty('rate', rate - 10)\n        audio_engine.save_to_file(msg,str(count)+ 'speech.mp3')\n        print(\"需要TTS的对象：\"+msg)\n        audio_engine.runAndWait()\n        return 'done'\n    def test():",
         "detail": "TTS",
         "documentation": {}
     },
@@ -457,7 +466,7 @@
         "kind": 6,
         "importPath": "Whisper",
         "description": "Whisper",
-        "peekOfCode": "class WhisperChat:\n    openai.api_key = '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'\n    def trans2Text(self,audio_file):\n        open_file = audio_file\n        print(open_file)\n        # open_file2= open(\"E:/GPT/Chatkp/chatkp/audio/test.m4a\", \"rb\")\n        # print(open_file2)\n        transcript = openai.Audio.transcribe_raw(\"whisper-1\", open_file,'recorder.mp3')\n        return transcript.text\n    # audio_file= open(\"E:/GPT/Chatkp/chatkp/audio/test.m4a\", \"rb\")",
+        "peekOfCode": "class WhisperChat:\n    openai.api_key = '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'\n    def trans2Text(self,audio_file):\n        open_file = audio_file\n        print(open_file)\n        # open_file2= open(\"E:/GPT/Chatkp/chatkp/audio/test.m4a\", \"rb\")\n        # print(open_file2)\n        transcript = openai.Audio.transcribe_raw(\"whisper-1\", open_file,'recorder.mp3')\n        return transcript.text\n    # audio_file= open(\"E:/GPT/Chatkp/chatkp/audio/test.m4a\", \"rb\")",
         "detail": "Whisper",
         "documentation": {}
     }

@@ -118,12 +118,10 @@
 </head>
 <body>
 	<p class = 'title'>GPT首页</p>
-	<audio controls class="audioPanel"> 
-		<source id="source" src="" type="audio/mp3"> 
-		Your browser does not support the audio element. 
-	</audio> 
 	<div class="container">
-		<div class="output" id="messages"></div>
+		<div class="output" id="messages">
+
+		</div>
 		<form id="user-form" action="/" method="POST">
 			<div class="input">
 				<input class="inputframe" id="user-input-text" type="text" name="message" placeholder="输入信息">
@@ -148,6 +146,7 @@
 	<script src="https://cdn.jsdelivr.net/gh/xiangyuecn/Recorder@latest/src/extensions/frequency.histogram.view.js"></script>
 	<script src="https://cdn.jsdelivr.net/gh/xiangyuecn/Recorder@latest/src/extensions/lib.fft.js"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.1/howler.min.js"></script>
     <!--请求麦克风弹窗-->
 	<script>
 		//recOpen我们可以选择性的弹一个对话框：为了防止移动端浏览器存在第三种情况：用户忽略，并且（或者国产系统UC系）浏览器没有任何回调
@@ -305,10 +304,23 @@
 									data: { audio_text: response },
 									success: function(data) {
 										console.log('debugPoint2:'+data)
-										/**$('audio #source').attr('src', '/audio2'); **/
-										$('#audioPanel').append('<source id="source" src="'+'speech.mp3'+'" type="audio/mp3"> ');
-										$('audio').get().load(); 
-										$('audio').get(-1).play();
+										if(document.getElementById('audioPanel')){
+											console.log('debugPoint3:'+data)
+											document.getElementById('audioPanel').remove();
+										}
+										if(count%2==0){
+											$('#messages').append('<audio controls preload="auto" id="audioPanel"> <source id="source" src="/audio2" type="audio/mp3"> Your browser does not support the audio element. </audio> ');
+										}
+										else{
+											$('#messages').append('<audio controls preload="auto" id="audioPanel"> <source id="source" src="/audio3" type="audio/mp3"> Your browser does not support the audio element. </audio> ');
+										}	
+										/**$('#source'+count.toString()).attr('src', '/audio2'); **/
+										index=$('audio').index($('audio').last())
+										console.log(index)
+										   $('audio').get(index).load(); 
+										   $('audio').get(index).play();
+										count++;
+		
 									}
 								});
 							}
@@ -349,14 +361,9 @@
 
 			});
 		});
-	</script>
-	<!-- 文件应该在一个服务器里 
-	<audio src='audio_file.mp3'></audio>-->
-	<!--按钮事件-->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.1/howler.min.js"></script>
 
-	<script>
 		console.log('测试报错')
+		count=0;
         $(function() {
             $('#user-form').submit(function(event) {
 				event.preventDefault();
@@ -381,14 +388,23 @@
 							data: { audio_text: response},
 							success: function(data) {
 								console.log('debugPoint2:'+data)
-								$('audio #source').attr('src', '/audio2'); 
-								console.log('debugPoint3:'+data)
-								
-								console.log($('audio').length)
-								
-       							$('audio').get(0).load(); 
-       							$('audio').get(0).play();
-								console.log('debugPoint4:'+data)
+								if(document.getElementById('audioPanel')){
+									console.log('debugPoint3:'+data)
+									document.getElementById('audioPanel').remove();
+								}
+								if(count%2==0){
+									$('#messages').append('<audio controls preload="auto" id="audioPanel"> <source id="source" src="/audio2" type="audio/mp3"> Your browser does not support the audio element. </audio> ');
+								}
+								else{
+									$('#messages').append('<audio controls preload="auto" id="audioPanel"> <source id="source" src="/audio3" type="audio/mp3"> Your browser does not support the audio element. </audio> ');
+								}	
+								/**$('#source'+count.toString()).attr('src', '/audio2'); **/
+								index=$('audio').index($('audio').last())
+								console.log(index)
+       							$('audio').get(index).load(); 
+       							$('audio').get(index).play();
+								count++;
+
 							}
 						});
                     }

@@ -1,6 +1,6 @@
 import openai
 class WhisperChat:
-    openai.api_key = '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'
+    openai.api_key = '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'
     def trans2Text(self,audio_file):
         open_file = audio_file
 

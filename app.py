@@ -82,7 +82,7 @@ def hello_world():
 '''
 allMsg=''
 chatCount=0
-
+count=0
 #主页
 @app.route('/')
 def home():
@@ -102,19 +102,26 @@ def processIndex():
     return response
 @app.route('/audio',methods=['GET','POST'])
 def audioSend():
+    global count
+    count+=1
     audio_text = request.form['audio_text']
-    if(os.path.isfile("speech.mp3")):
-        os.remove('speech.mp3')
+    if(os.path.isfile(str(count)+"speech.mp3")):
+        os.remove(str(count)+'speech.mp3')
     audioEngine=TTS()
-    audioEngine.get_audio(audio_text)
-    audio_path ='speech.mp3'
+    audioEngine.get_audio(audio_text,count)
+    audio_path =str(count)+'speech.mp3'
     print(audio_path)
     time.sleep(1)
     return '！！！！！！！！！！！！！！'
     # return audio_path
-@app.route('/audio2',methods=['POST'])
+@app.route('/audio2',methods=['GET'])
 def audioSend2():
-    return send_file('speech.mp3', mimetype='audio/mp3')    
+    global count
+    return send_file(str(count)+'speech.mp3', mimetype='audio/mp3')
+@app.route('/audio3',methods=['GET'])
+def audioSend3():
+    global count
+    return send_file(str(count)+'speech.mp3', mimetype='audio/mp3')    
 @app.route('/rectrans',methods=['POST'])
 def rectrans():
     audioFile=request.files['audioFile']
