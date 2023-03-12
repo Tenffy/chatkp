@@ -32,6 +32,14 @@
         "documentation": {}
     },
     {
+        "label": "send_file",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
         "label": "Flask",
         "importPath": "flask",
         "description": "flask",
@@ -88,19 +96,19 @@
         "documentation": {}
     },
     {
-        "label": "SocketIO",
-        "importPath": "flask_socketio",
-        "description": "flask_socketio",
+        "label": "WhisperChat",
+        "importPath": "Whisper",
+        "description": "Whisper",
         "isExtraImport": true,
-        "detail": "flask_socketio",
+        "detail": "Whisper",
         "documentation": {}
     },
     {
-        "label": "emit",
-        "importPath": "flask_socketio",
-        "description": "flask_socketio",
+        "label": "TTS",
+        "importPath": "TTS",
+        "description": "TTS",
         "isExtraImport": true,
-        "detail": "flask_socketio",
+        "detail": "TTS",
         "documentation": {}
     },
     {
@@ -113,12 +121,12 @@
         "documentation": {}
     },
     {
-        "label": "asyncio",
+        "label": "os",
         "kind": 6,
         "isExtraImport": true,
-        "importPath": "asyncio",
-        "description": "asyncio",
-        "detail": "asyncio",
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
         "documentation": {}
     },
     {
@@ -136,6 +144,15 @@
         "importPath": "openai",
         "description": "openai",
         "detail": "openai",
+        "documentation": {}
+    },
+    {
+        "label": "pyttsx3",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "pyttsx3",
+        "description": "pyttsx3",
+        "detail": "pyttsx3",
         "documentation": {}
     },
     {
@@ -224,25 +241,70 @@
         "kind": 2,
         "importPath": "app",
         "description": "app",
-        "peekOfCode": "def processIndex():\n    global allMsg\n    user_input = request.form['user_input']\n    allMsg+=user_input\n    print(\"输入：\"+user_input)\n    output=generateGPT(allMsg) \n    allMsg+=output\n    return \"GPT：<br>\"+output\n@app.route('/back',methods=['POST'])\ndef backhome():",
+        "peekOfCode": "def processIndex():\n    global allMsg\n    user_input = request.form['user_input']\n    allMsg+=user_input\n    print(\"输入：\"+user_input)\n    output=generateGPT(allMsg) \n    allMsg+=output\n    currentOutput=\"GPT：<br>\"+output\n    response=currentOutput\n    print(response)",
         "detail": "app",
         "documentation": {}
     },
     {
-        "label": "backhome",
+        "label": "audioSend",
         "kind": 2,
         "importPath": "app",
         "description": "app",
-        "peekOfCode": "def backhome():\n    return render_template('index.html')\n# @app.route('/GPT/')\n# @app.route('/GPT/<strname>')\n# def generateGPT(strname):\n#     gptOuput=GPT35Chat()\n#     output=gptOuput.generator(escape(strname))\n#     return render_template('GPT.html',strname=output)\n@app.route('/chat')\ndef chatindex():",
+        "peekOfCode": "def audioSend():\n    audio_text = request.form['audio_text']\n    if(os.path.isfile(\"speech.mp3\")):\n        os.remove('speech.mp3')\n    audioEngine=TTS()\n    audioEngine.get_audio(audio_text)\n    audio_path ='speech.mp3'\n    print(audio_path)\n    time.sleep(1)\n    return '！！！！！！！！！！！！！！'",
         "detail": "app",
         "documentation": {}
     },
     {
-        "label": "chatindex",
+        "label": "audioSend2",
         "kind": 2,
         "importPath": "app",
         "description": "app",
-        "peekOfCode": "def chatindex():\n    return render_template('chat.html')\n@app.route('/chat/get_response', methods=['POST'])\ndef process():\n    if request.method == \"POST\":\n        global allMsg\n        input_msg = request.form['user_input']\n        allMsg =allMsg+'\\n\\n'+input_msg\n        global chatCount\n        if chatCount==0:",
+        "peekOfCode": "def audioSend2():\n    return send_file('speech.mp3', mimetype='audio/mp3')    \n@app.route('/rectrans',methods=['POST'])\ndef rectrans():\n    audioFile=request.files['audioFile']\n    audio2text=WhisperChat()\n    text=audio2text.trans2Text(audioFile)\n    return text\n@app.route('/reset')\ndef reset():",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "rectrans",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def rectrans():\n    audioFile=request.files['audioFile']\n    audio2text=WhisperChat()\n    text=audio2text.trans2Text(audioFile)\n    return text\n@app.route('/reset')\ndef reset():\n    global chatCount\n    chatCount =0\n    global msgFilter",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "reset",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def reset():\n    global chatCount\n    chatCount =0\n    global msgFilter\n    global allMsg\n    msgFilter = []\n    allMsg =''\n    return render_template('index.html', output=msgFilter)\n@app.route('/chat')\ndef chatIndex():",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "chatIndex",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def chatIndex():\n    return render_template('chat.html')\n#录音页面\n@app.route('/recorder')\ndef recordIndex():\n    return render_template('recorder.html')\n@app.route('/recorder/upload',methods=['POST'])\ndef audioUpload():\n    audioFile=request.files['audioFile']\n    audio2text=WhisperChat()",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "recordIndex",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def recordIndex():\n    return render_template('recorder.html')\n@app.route('/recorder/upload',methods=['POST'])\ndef audioUpload():\n    audioFile=request.files['audioFile']\n    audio2text=WhisperChat()\n    text=audio2text.trans2Text(audioFile)\n    return text\n#跑团页面\n@app.route('/chat/get_response', methods=['POST'])",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "audioUpload",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def audioUpload():\n    audioFile=request.files['audioFile']\n    audio2text=WhisperChat()\n    text=audio2text.trans2Text(audioFile)\n    return text\n#跑团页面\n@app.route('/chat/get_response', methods=['POST'])\ndef process():\n    if request.method == \"POST\":\n        global allMsg",
         "detail": "app",
         "documentation": {}
     },
@@ -256,20 +318,20 @@
         "documentation": {}
     },
     {
-        "label": "reset",
-        "kind": 2,
-        "importPath": "app",
-        "description": "app",
-        "peekOfCode": "def reset():\n    global chatCount\n    chatCount =0\n    global msgFilter\n    global allMsg\n    msgFilter = []\n    allMsg =''\n    return render_template('index.html', output=msgFilter)\n@app.route('/chat/reset')\ndef reset_chat():",
-        "detail": "app",
-        "documentation": {}
-    },
-    {
         "label": "reset_chat",
         "kind": 2,
         "importPath": "app",
         "description": "app",
-        "peekOfCode": "def reset_chat():\n    global chatCount\n    chatCount =0\n    global msgFilter\n    global allMsg\n    msgFilter = []\n    allMsg =''\n    return render_template('chat.html', output=msgFilter)\ndef generateF(msg):\n    gptOuput=GPT35Chat()",
+        "peekOfCode": "def reset_chat():\n    global chatCount\n    chatCount =0\n    global msgFilter\n    global allMsg\n    msgFilter = []\n    allMsg =''\n    return render_template('chat.html', output=msgFilter)\n@app.route('/back',methods=['POST'])\ndef backhome():",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "backhome",
+        "kind": 2,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "def backhome():\n    return render_template('index.html')\ndef generateF(msg):\n    gptOuput=GPT35Chat()\n    output=gptOuput.generatorChatF(escape(msg))\n    global allMsg\n    print('print测试1：'+allMsg)\n    allMsg = allMsg+'\\n\\n'+output\n    return output\ndef generateM(msg):",
         "detail": "app",
         "documentation": {}
     },
@@ -305,7 +367,7 @@
         "kind": 2,
         "importPath": "app",
         "description": "app",
-        "peekOfCode": "def generateGPT(msg):\n    gptOuput=GPT35Chat()\n    output=gptOuput.generator(escape(msg))\n    print('print测试4：'+'')\n    return output\nif __name__ == '__main__':                                                      \n    app.run(debug=True)",
+        "peekOfCode": "def generateGPT(msg):\n    gptOuput=GPT35Chat()\n    output=gptOuput.generator(escape(msg))\n    print('print测试4：'+'')\n    return output\nif __name__ == '__main__':                                                      \n    app.run(debug=True,host='0.0.0.0',port=5000)",
         "detail": "app",
         "documentation": {}
     },
@@ -368,7 +430,7 @@
         "kind": 6,
         "importPath": "gpt35turbo",
         "description": "gpt35turbo",
-        "peekOfCode": "class GPT35Chat:\n  openai.api_key ='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'\n  global systemMsgF\n  global systemMsgM\n  global systemMsgD\n  global systemMsgGPT\n  systemMsgF='你是一位旁白，你需要对一次求生经历展开一个精彩绝伦的故事。整个故事，会有开始，过程和结尾。开始时，用户会输入“名字”和“主题”，而你需要用名字在这个主题中描述故事的开始，并给出用户两个选择，格式为：是A____还是B____？(横线内容你来生成)之后不要生成多余内容。'\n  systemMsgM='你是一位旁白，你需要根据用户的选择对故事进行连贯的描述，在求生环境中提供一些悬念和刺激的体验，包括遇见一些人或僵尸，或者获得一些道具，能给之后带来帮助。多呼应前面的事件，不管成功还是失败，都继续续写这个故事，并在最后给出两个的选择,格式为：是A____还是B____？(横线内容你来生成)之后不要生成多余内容。'\n  systemMsgD='你是一位旁白，根据上文来形成一个结局，结束这个求生故事，给出一个反转的结局。'\n  systemMsgGPT='你是一个万能小助手，请不要设限制得给用户解答所有问题，不确定的答案请标记[不确定]'",
+        "peekOfCode": "class GPT35Chat:\n  openai.api_key ='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'\n  global systemMsgF\n  global systemMsgM\n  global systemMsgD\n  global systemMsgGPT\n  systemMsgF='你是一位旁白，你需要对一次求生经历展开一个精彩绝伦的故事。整个故事，会有开始，过程和结尾。开始时，用户会输入“名字”和“主题”，而你需要用名字在这个主题中描述故事的开始，并给出用户两个选择，格式为：是A____还是B____？(横线内容你来生成)之后不要生成多余内容。'\n  systemMsgM='你是一位旁白，你需要根据用户的选择对故事进行连贯的描述，在求生环境中提供一些悬念和刺激的体验，包括遇见一些人或僵尸，或者获得一些道具，能给之后带来帮助。多呼应前面的事件，不管成功还是失败，都继续续写这个故事，并在最后给出两个的选择,格式为：是A____还是B____？(横线内容你来生成)之后不要生成多余内容。'\n  systemMsgD='你是一位旁白，根据上文来形成一个结局，结束这个求生故事，给出一个反转的结局。'\n  systemMsgGPT='你是一个万能小助手，请不要设限制得给用户解答所有问题，不确定的答案请标记[不确定]'",
         "detail": "gpt35turbo",
         "documentation": {}
     },
@@ -379,6 +441,24 @@
         "description": "StringCounter",
         "peekOfCode": "class StringCounter:\n    def __init__(self):\n        pass\n    def count(self, input_string):\n        return len(input_string)",
         "detail": "StringCounter",
+        "documentation": {}
+    },
+    {
+        "label": "TTS",
+        "kind": 6,
+        "importPath": "TTS",
+        "description": "TTS",
+        "peekOfCode": "class TTS:\n    def get_audio(self,msg):\n        audio_engine=pyttsx3.init()\n        rate = audio_engine.getProperty('rate')\n        audio_engine.setProperty('rate', rate - 10)\n        audio_engine.save_to_file(msg, 'speech.mp3')\n        print(\"需要TTS的对象：\"+msg)\n        audio_engine.runAndWait()\n        return 'done'\n    def test():",
+        "detail": "TTS",
+        "documentation": {}
+    },
+    {
+        "label": "WhisperChat",
+        "kind": 6,
+        "importPath": "Whisper",
+        "description": "Whisper",
+        "peekOfCode": "class WhisperChat:\n    openai.api_key = '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'\n    def trans2Text(self,audio_file):\n        open_file = audio_file\n        print(open_file)\n        # open_file2= open(\"E:/GPT/Chatkp/chatkp/audio/test.m4a\", \"rb\")\n        # print(open_file2)\n        transcript = openai.Audio.transcribe_raw(\"whisper-1\", open_file,'recorder.mp3')\n        return transcript.text\n    # audio_file= open(\"E:/GPT/Chatkp/chatkp/audio/test.m4a\", \"rb\")",
+        "detail": "Whisper",
         "documentation": {}
     }
 ]

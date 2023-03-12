@@ -55,6 +55,28 @@
 			font-size: 16px;
 			cursor: pointer;
 		}
+		.rec_button {
+			height: 60px;
+			width: 150px;
+			background-color: #007bff;
+			color: #fff;
+			border: none;
+			padding: 10px;
+			font-size: 16px;
+			cursor: pointer;
+			margin-top: 10px;
+		}
+		.over_button {
+			height: 60px;
+			width: 150px;
+			background-color: #d14747;
+			color: #fff;
+			border: none;
+			padding: 10px;
+			font-size: 16px;
+			cursor: pointer;
+			margin-top: 10px;
+		}
 		.container2 {
 			display: flex;
 			flex-direction: column;
@@ -96,21 +118,244 @@
 </head>
 <body>
 	<p class = 'title'>GPT首页</p>
+	<audio controls class="audioPanel"> 
+		<source id="source" src="" type="audio/mp3"> 
+		Your browser does not support the audio element. 
+	</audio> 
 	<div class="container">
 		<div class="output" id="messages"></div>
 		<form id="user-form" action="/" method="POST">
 			<div class="input">
 				<input class="inputframe" id="user-input-text" type="text" name="message" placeholder="输入信息">
 				<input id ='send_button' class="send_button" type="submit" value="发送">
+
 			</div>
 		</form>
+		<div class='container3'>	
+			<button id ='rec_button' class="rec_button"  >语音输入</button>
+			<button id ='over_button' class="over_button"  >语音完毕</button>
+			<button id ='close_button' class="close_button"  >清除缓存</button>
+		</div>
 		<div class='container2'>
 			<button class= 'reset-button' id="reset-button">重置</button>
 			<button class= 'chat-button' id="chat-button">跑团GPT</button>
 		</div>
 	</div>
+	<!--引入录音核心文件，和jquery文件-->
+	<script src="https://cdn.jsdelivr.net/gh/xiangyuecn/Recorder@latest/src/recorder-core.js" onerror="!window.onBadCDN||onBadCDN()" onload="!window.onOKCDN||onOKCDN()"></script>
+	<script src="https://cdn.jsdelivr.net/gh/xiangyuecn/Recorder@latest/src/engine/mp3.js"></script>
+	<script src="https://cdn.jsdelivr.net/gh/xiangyuecn/Recorder@latest/src/engine/mp3-engine.js"></script>
+	<script src="https://cdn.jsdelivr.net/gh/xiangyuecn/Recorder@latest/src/extensions/frequency.histogram.view.js"></script>
+	<script src="https://cdn.jsdelivr.net/gh/xiangyuecn/Recorder@latest/src/extensions/lib.fft.js"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    <script>
+    <!--请求麦克风弹窗-->
+	<script>
+		//recOpen我们可以选择性的弹一个对话框：为了防止移动端浏览器存在第三种情况：用户忽略，并且（或者国产系统UC系）浏览器没有任何回调
+		var showDialog=function(){
+			if(!/mobile/i.test(navigator.userAgent)){
+				return;//只在移动端开启没有权限请求的检测
+			};
+			dialogCancel();
+			
+			//显示弹框，应该使用自己的弹框方式
+			var div=document.createElement("div");
+			document.body.appendChild(div);
+			div.innerHTML=(''
+				+'<div class="waitDialog" style="z-index:99999;width:100%;height:100%;top:0;left:0;position:fixed;background:rgba(0,0,0,0.3);">'
+					+'<div style="display:flex;height:100%;align-items:center;">'
+						+'<div style="flex:1;"></div>'
+						+'<div style="width:240px;background:#fff;padding:15px 20px;border-radius: 10px;">'
+							+'<div style="padding-bottom:10px;">录音功能需要麦克风权限，请允许；如果未看到任何请求，请点击忽略~</div>'
+							+'<div style="text-align:center;"><a onclick="waitDialogClick()" style="color:#0B1">忽略</a></div>'
+						+'</div>'
+						+'<div style="flex:1;"></div>'
+					+'</div>'
+				+'</div>');
+		};
+		var createDelayDialog=function(){
+			dialogInt=setTimeout(function(){//定时8秒后打开弹窗，用于监测浏览器没有发起权限请求的情况，在open前放置定时器利于收到了回调能及时取消（不管open是同步还是异步回调的）
+				showDialog();
+			},8000);
+		};
+		var dialogInt;
+		var dialogCancel=function(){
+			clearTimeout(dialogInt);
+			
+			//关闭弹框，应该使用自己的弹框方式
+			var elems=document.querySelectorAll(".waitDialog");
+			for(var i=0;i<elems.length;i++){
+				elems[i].parentNode.removeChild(elems[i]);
+			};
+		};
+		//recOpen弹框End
+		var formatMs=function(ms,all){
+			var f=Math.floor(ms/60000),m=Math.floor(ms/1000)%60;
+			var s=(all||f>0?(f<10?"0":"")+f+":":"")
+				+(all||f>0||m>0?("0"+m).substr(-2)+"″":"")
+				+("00"+ms%1000).substr(-3);
+			return s;
+		};
+	</script>
+	<!--录音方法-->
+	<script>
+		var rec,wave,recBlob;
+		/**调用open打开录音请求好录音权限**/
+		var recOpen=function(){//一般在显示出录音按钮或相关的录音界面时进行此方法调用，后面用户点击开始录音时就能畅通无阻了
+			rec=null;
+			wave=null;
+			recBlob=null;
+			var newRec=Recorder({
+				type:"mp3",sampleRate:16000,bitRate:16 //mp3格式，指定采样率hz、比特率kbps，其他参数使用默认配置；注意：是数字的参数必须提供数字，不要用字符串；需要使用的type类型，需提前把格式支持文件加载进来，比如使用wav格式需要提前加载wav.js编码引擎
+				,onProcess:function(buffers,powerLevel,bufferDuration,bufferSampleRate,newBufferIdx,asyncEnd){
+					//录音实时回调，大约1秒调用12次本回调
+					document.querySelector(".recpowerx").style.width=powerLevel+"%";
+					document.querySelector(".recpowert").innerText=formatMs(bufferDuration,1)+" / "+powerLevel;
+					
+					
+				}
+			});
+		
+			createDelayDialog(); //我们可以选择性的弹一个对话框：为了防止移动端浏览器存在第三种情况：用户忽略，并且（或者国产系统UC系）浏览器没有任何回调，此处demo省略了弹窗的代码
+			newRec.open(function(){//打开麦克风授权获得相关资源
+				dialogCancel(); //如果开启了弹框，此处需要取消
+				
+				rec=newRec;
+				console.log("已打开录音，可以点击录制开始录音了",2);
+			},function(msg,isUserNotAllow){//用户拒绝未授权或不支持
+				dialogCancel(); //如果开启了弹框，此处需要取消
+				console.log((isUserNotAllow?"UserNotAllow，":"")+"打开录音失败："+msg,1);
+			});
+			
+			window.waitDialogClick=function(){
+				dialogCancel();
+				console.log("打开失败：权限请求被忽略，<span style='color:#f00'>用户主动点击的弹窗</span>",1);
+			};
+		};
+		
+		
+		
+		/**关闭录音，释放资源**/
+		function recClose(){
+			if(rec){
+				rec.close();
+				console.log("已关闭");
+			}else{
+				console.log("未打开录音",1);
+			};
+		};
+		
+		/**开始录音**/
+		function recStart(){//打开了录音后才能进行start、stop调用
+			if(rec&&Recorder.IsOpen()){
+				recBlob=null;
+				rec.start();
+				console.log("已开始录音...");
+				$('#rec_button').hide();
+				$('#over_button').show();
+
+			}else{
+				console.log("未打开录音",1);
+			};
+		};
+		/**播放音频**/
+		
+		/**结束录音，得到音频文件**/
+		function recStop(){
+			if(!(rec&&Recorder.IsOpen())){
+				console.log("未打开录音",1);
+				return;
+			};
+			rec.stop(function(blob,duration){
+				console.log(blob,(window.URL||webkitURL).createObjectURL(blob),"时长:"+duration+"ms");
+				
+				recBlob=blob;
+				console.log("已录制mp3："+formatMs(duration)+"ms "+blob.size+"字节，可以点击播放、上传了",2);
+				var audioFile=recBlob;
+				var fd = new FormData();
+				fd.append('audioFile', audioFile,"recorder.mp3");
+				$.ajax({
+					type: 'POST',
+					url: '/rectrans',
+					data: fd,
+					async:false,
+					processData: false,
+					contentType: false,
+					Headers: {"Access-Control-Allow-Headers": "Content-Type"},
+					success: function(response) {
+						console.log(response,2);
+						$('#messages').append('<div class="user-message"><p>我：' + response+'<br></p></div>');
+						$('#messages').scrollTop($('#messages')[0].scrollHeight);	
+						$('#send_button').attr('disabled',true);	
+						$('#send_button').css('background','gray');	
+						$('#over_button').hide();
+						$('#rec_button').show();
+						$.ajax({
+							type: 'POST',
+							url: '/get_response',
+							data: { user_input: response },
+							success: function(response) {
+								console.log('debugPoint1')
+								$('#messages').append('<div class="bot-message">' + response + '</div>');
+								$('#messages').scrollTop($('#messages')[0].scrollHeight);
+								$('#send_button').attr('disabled',false);
+								$('#send_button').css('background','#007bff');
+								$.ajax({
+									type: 'POST',
+									url: '/audio',
+									data: { audio_text: response },
+									success: function(data) {
+										console.log('debugPoint2:'+data)
+										/**$('audio #source').attr('src', '/audio2'); **/
+										$('#audioPanel').append('<source id="source" src="'+'speech.mp3'+'" type="audio/mp3"> ');
+										$('audio').get().load(); 
+										$('audio').get(-1).play();
+									}
+								});
+							}
+						});
+						
+					}
+				});
+
+			},function(msg){
+				console.log("录音失败:"+msg,1);
+			});
+
+		};
+		
+		
+		/**操作**/
+		$('#over_button').hide();
+		$('#close_button').hide();
+		recOpen();
+
+		$(function() {
+			
+			$('#rec_button').click(function() {
+				
+				recStart();
+			});
+		});
+		$(function() {
+			
+			$('#close_button').click(function() {
+				
+				recClose();
+			});
+		});
+		$(function() {
+			$("#over_button").click(function() {
+				recStop();
+
+			});
+		});
+	</script>
+	<!-- 文件应该在一个服务器里 
+	<audio src='audio_file.mp3'></audio>-->
+	<!--按钮事件-->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.1/howler.min.js"></script>
+
+	<script>
 		console.log('测试报错')
         $(function() {
             $('#user-form').submit(function(event) {
@@ -125,10 +370,27 @@
                     url: '/get_response',
                     data: { user_input: user_input },
                     success: function(response) {
-                        $('#messages').append('<div class="bot-message">' + response + '</div>');
+						console.log('debugPoint1:'+response)
+                        $('#messages').append('<div class="bot-message">' + response+ '</div>');
 						$('#messages').scrollTop($('#messages')[0].scrollHeight);
 						$('#send_button').attr('disabled',false);
 						$('#send_button').css('background','#007bff');
+						$.ajax({
+							type: 'POST',
+							url: '/audio',
+							data: { audio_text: response},
+							success: function(data) {
+								console.log('debugPoint2:'+data)
+								$('audio #source').attr('src', '/audio2'); 
+								console.log('debugPoint3:'+data)
+								
+								console.log($('audio').length)
+								
+       							$('audio').get(0).load(); 
+       							$('audio').get(0).play();
+								console.log('debugPoint4:'+data)
+							}
+						});
                     }
                 });
                 $('#user-input-text').val('');

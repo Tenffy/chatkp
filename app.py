@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request
 from markupsafe import escape
 from flask import render_template
+from flask import send_file 
 from gpt35turbo import GPT35Chat
+from Whisper import WhisperChat
+from TTS import TTS
 import time
-import asyncio
-
+import os
 app= Flask(__name__)
 app.config["JSON_AS_ASCII"]= False
 '''
@@ -80,6 +82,8 @@ def hello_world():
 '''
 allMsg=''
 chatCount=0
+
+#主页
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -91,21 +95,59 @@ def processIndex():
     print("输入："+user_input)
     output=generateGPT(allMsg) 
     allMsg+=output
-    return "GPT：<br>"+output
+    currentOutput="GPT：<br>"+output
 
-@app.route('/back',methods=['POST'])
-def backhome():
-    return render_template('index.html')
-# @app.route('/GPT/')
-# @app.route('/GPT/<strname>')
-# def generateGPT(strname):
-#     gptOuput=GPT35Chat()
-#     output=gptOuput.generator(escape(strname))
-#     return render_template('GPT.html',strname=output)
-
+    response=currentOutput
+    print(response)
+    return response
+@app.route('/audio',methods=['GET','POST'])
+def audioSend():
+    audio_text = request.form['audio_text']
+    if(os.path.isfile("speech.mp3")):
+        os.remove('speech.mp3')
+    audioEngine=TTS()
+    audioEngine.get_audio(audio_text)
+    audio_path ='speech.mp3'
+    print(audio_path)
+    time.sleep(1)
+    return '！！！！！！！！！！！！！！'
+    # return audio_path
+@app.route('/audio2',methods=['POST'])
+def audioSend2():
+    return send_file('speech.mp3', mimetype='audio/mp3')    
+@app.route('/rectrans',methods=['POST'])
+def rectrans():
+    audioFile=request.files['audioFile']
+    audio2text=WhisperChat()
+    text=audio2text.trans2Text(audioFile)
+    return text
+@app.route('/reset')
+def reset():
+    global chatCount
+    chatCount =0
+    global msgFilter
+    global allMsg
+    msgFilter = []
+    allMsg =''
+    return render_template('index.html', output=msgFilter)
 @app.route('/chat')
-def chatindex():
+def chatIndex():
     return render_template('chat.html')
+
+
+#录音页面
+@app.route('/recorder')
+def recordIndex():
+    return render_template('recorder.html')
+@app.route('/recorder/upload',methods=['POST'])
+def audioUpload():
+    audioFile=request.files['audioFile']
+    audio2text=WhisperChat()
+    text=audio2text.trans2Text(audioFile)
+    return text
+
+#跑团页面
+
 @app.route('/chat/get_response', methods=['POST'])
 def process():
     if request.method == "POST":
@@ -120,7 +162,6 @@ def process():
             output=generateF(input_msg)
             msgFilter = "第%s轮:"%chatCount+output
             is_finish=False
-            response=[msgFilter,is_finish]
             return response
         elif chatCount<5:
             output=generateM(allMsg)
@@ -135,15 +176,7 @@ def process():
             chatCount=0
             response=[msgFilter,is_finish]
             return response
-@app.route('/reset')
-def reset():
-    global chatCount
-    chatCount =0
-    global msgFilter
-    global allMsg
-    msgFilter = []
-    allMsg =''
-    return render_template('index.html', output=msgFilter)
+
 @app.route('/chat/reset')
 def reset_chat():
     global chatCount
@@ -153,6 +186,9 @@ def reset_chat():
     msgFilter = []
     allMsg =''
     return render_template('chat.html', output=msgFilter)
+@app.route('/back',methods=['POST'])
+def backhome():
+    return render_template('index.html')
 def generateF(msg):
     gptOuput=GPT35Chat()
     output=gptOuput.generatorChatF(escape(msg))

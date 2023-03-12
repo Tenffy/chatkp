@@ -1,0 +1,19 @@
+{
+  "name": "record-bai",
+  "version": "1.0.1",
+  "scripts": {
+    "start": "node package-build.js"
+  },
+  "dependencies": {
+    "uglify-js": "3.3.16"
+  },
+  "author": {
+    "name": "baibaider"
+  },
+  "main": "src/recorder-core.js",
+  "bugs": {
+    "url": "https://github.com/baibaider/Recorder/issues"
+  },
+  "repository": "https://github.com/baibaider/Recorder",
+  "publishConfig": { "registry": "http://registry.npmjs.org/" }
+}
